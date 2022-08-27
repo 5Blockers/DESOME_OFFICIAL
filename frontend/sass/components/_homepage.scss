@@ -1,0 +1,10 @@
+.homepage {
+    @include flex(center, center);
+    .posting-left {
+        // margin-right: 1rem;
+    }
+    .newfeed {
+        flex-direction: column;
+        padding: 1rem;
+    }
+}
