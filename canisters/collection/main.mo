@@ -6,13 +6,19 @@ import List "mo:base/List";
 import NFTActor "../nft/main";
 import Principal "mo:base/Principal";
 import Text "mo:base/Principal";
+import Time "mo:base/Time";
 actor Collection {
-    Debug.print("Collection works!");
     private type Item = {
         ownerItem: Principal;
         price: Nat;
+        startPrice : Nat;
+        startTime : Int;
     };
-
+    public type Offer = {
+        price : Nat;
+        from : Principal;
+    };
+    private var offerPriceMaps = HashMap.HashMap<Principal, List.List<Offer>>(1, Principal.equal, Principal.hash);
     // danh sach cac nft
     private var nftMaps = HashMap.HashMap<Principal, NFTActor.NFT>(1, Principal.equal, Principal.hash);
     // danh sach cac owner key la Prin, value la Prin list de map voi tung cai NFT
@@ -20,11 +26,65 @@ actor Collection {
     // list nhung cai nft
     private var itemMaps = HashMap.HashMap<Principal, Item>(1, Principal.equal, Principal.hash); 
 
+    public func createOffer(newPrice : Nat, newFrom : Principal, nft : Principal) : async Text {
+        var ownerNFTs : NFTActor.NFT = switch(nftMaps.get(nft)) {
+            case null return "NFT does not exist";
+            case (?result) result;
+        };
+        var itemNFTs : Item = switch(itemMaps.get(nft)) {
+            case null return "NFT does not exist";
+            case (?result) result;
+        };
+        var itemOffer : List.List<Offer> = switch(offerPriceMaps.get(Principal.fromActor(ownerNFTs))) {
+            case null return "Ahihi";
+            case (?v) v;
+        };
+        if(List.size(itemOffer) < 1) {
+            if(newPrice < itemNFTs.startPrice) {
+                return "Ai cho giá bé hơn";
+            }
+            else {
+                var offer : Offer = {
+                    price = newPrice;
+                    from = newFrom
+                };
+                var newItemNFTs : Item = {
+                    price = itemNFTs.price;
+                    ownerItem = itemNFTs.ownerItem;
+                    startPrice = itemNFTs.startPrice;
+                    startTime = Time.now();
+                };
+                itemOffer := List.push(offer,itemOffer);
+                offerPriceMaps.put(Principal.fromActor(ownerNFTs),itemOffer);
+                itemMaps.put(Principal.fromActor(ownerNFTs),newItemNFTs);
+                return "Create offer successfully";
+            };
+        } else {
+            var lastOffer : Offer = switch(List.last(itemOffer)) {
+                case null return "Error";
+                case (?v) v;
+            };
+            if (newPrice <= lastOffer.price) {
+                return "Ai cho giá bé hơn";
+
+            } else {
+                var offer : Offer = {
+                    price = newPrice;
+                    from = newFrom
+                };
+                itemOffer := List.push(offer,itemOffer);
+                offerPriceMaps.put(Principal.fromActor(ownerNFTs),itemOffer);
+                return "Create offer successfully";
+            };
+        };
+    };
+
     public shared({caller}) func mint(name : Text, assest: Text, collection : Text, description : Text) : async Principal {
         let owner : Principal = caller;
         Cycles.add(100_500_000_000);
         let newNFT = await NFTActor.NFT(name, assest, collection, owner, description, nftMaps.size());
         let nftPrincipal = await newNFT.getCanisterID();
+        offerPriceMaps.put(nftPrincipal, List.nil<Offer>());
         nftMaps.put(nftPrincipal, newNFT);
         addToOwner(owner, nftPrincipal);
         return nftPrincipal;
@@ -54,7 +114,14 @@ actor Collection {
       return Iter.toArray(itemMaps.vals())
     };
 
-    public shared({caller}) func itemList(id: Principal) : async Text {
+    // public query func getNftLinkList(invalidLink : Text) : async [Text] {
+    //     var linkList : List.List<Text> = List.map(Iter.toArray(nftMaps.vals()), func(nft: NFTActor) : Text {
+    //         return await nft.getAssest();
+    //     });
+    //     return List.toArray(linkList);
+    // }; 
+
+    public shared({caller}) func itemList(id: Principal, price : Nat, startPrice : Nat) : async Text {
         var item : NFTActor.NFT = switch (nftMaps.get(id)) {
             case null return "NFT does not exist";
             case (?result) result;
@@ -63,7 +130,9 @@ actor Collection {
         if (Principal.equal(owner, caller)) {
             let newItem : Item = {
                 ownerItem = owner;
-                price = 0;
+                price = price;
+                startPrice = startPrice;
+                startTime = 0;
             };
             itemMaps.put(id, newItem);
             return "Success";
@@ -89,7 +158,9 @@ actor Collection {
     public query func getCollectionCanisterID() : async Principal {
       return Principal.fromActor(Collection);
     };
-
+public query func getItemByNFT(id : Principal) : async ?Item {
+        itemMaps.get(id);
+    };
    public shared({caller}) func transfer(id: Principal, ownerID: Principal, newOwnerID: Principal) : async Text {
         var nftPurchase : NFTActor.NFT = switch (nftMaps.get(id)) {
             case null return "NFT does not exist";
@@ -113,14 +184,14 @@ actor Collection {
             Debug.print(debug_show("After:", ownerNFT));
            
             addToOwner(newOwnerID, id);
-             ownerMaps.put(ownerID, ownerNFT);
+            ownerMaps.put(ownerID, ownerNFT);
             return "Success";
         } else {
             return transferResult;
         }
     };
 
-    public shared({caller}) func updateNFT(principal : Principal, name : Text, collection : Text, description : Text, isSale : Bool, newPrice : Nat) : async Text {
+    public shared({caller}) func updateNFT(principal : Principal, name : Text, collection : Text, description : Text, isSale : Bool, newPrice : Nat, newStartPrice : Nat) : async Text {
         switch(Principal.toText(caller)) {
             case("2vxsx-fae") return "Not autheticated";
             case(_) {
@@ -137,6 +208,8 @@ actor Collection {
                     let newItem : Item = {
                         ownerItem = await nftUpdate.getOwner();
                         price = newPrice;
+                        startPrice = newStartPrice;
+                        startTime = 0;
                     };
                     // item.price = price;
                     itemMaps.put(principal, newItem);
@@ -204,5 +277,4 @@ actor Collection {
             return transferResult;
         }
     };
-
 }

@@ -12,6 +12,10 @@
       "main": "canisters/nft/main.mo",
       "type": "motoko"
     },
+    "token": {
+      "main": "canisters/token/main.mo",
+      "type": "motoko"
+    },
     "assets": {
       "dependencies": [
         "counter",

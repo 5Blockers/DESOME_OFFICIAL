@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link, useNavigate } from "react-router-dom";
 import formik from "formik"
 import axios from 'axios'
@@ -12,7 +12,7 @@ import ViewModuleIcon from '@mui/icons-material/ViewModule';
 import StoreIcon from '@mui/icons-material/Store';
 import GavelIcon from '@mui/icons-material/Gavel';
 // data
-import { sang, userFollow } from '../assets/data/user'
+import { sang, User } from '../assets/data/user'
 // import { postList } from '../assets/data/post';
 // componet
 import NewFeed from '../components/NewFeed';
@@ -20,37 +20,43 @@ import Loader from "../utils/Loader"
 import UserInfo from '../components/UserInfo';
 import NftMint from "../components/NftMint"
 import { useUserContext } from '../context/UserContext';
+import { toast } from 'react-toastify';
 
 
 const HomePage: React.FC = () => {
 
-  const {auth, user, token, setUserPost, userPost} = useUserContext()
+  const { auth, user, token, setUserPost, userPost } = useUserContext()
+  let navigate = useNavigate()
   const [loading, setLoading] = useState<boolean>(true)
   const [openMint, setOpenMint] = useState<boolean>(false)
   const [imgUrl, setImgUrl] = useState<string>("");
+  const [userFollow, setUserFollow] = useState<Array<User>>([])
   const [uploadStatusField, setUploadStatusField] = useState<string>("");
-
+  const [trigger, setTrigger] = useState<boolean>(false)
   useEffect(() => {
     // console.log(token);
-    
+
     fetchPost()
     fetchAllUser()
-  }, [loading])
+  }, [loading, trigger])
 
   function fetchAllUser() {
-      // console.log(token);
-      axios.post("http://13.215.51.165:5000/api/user/all-users").then((res) => {
-        // console.log(res.data.data.user);
-      })
+    console.log(token);
+    axios.post("http://13.215.51.165:5000/api/user/all-users").then((res) => {
+      console.log(res.data.data.user);
+      const userList: Array<User> = res.data.data.user.filter((u: User) => u._id !== user._id)
+      setUserFollow(userList)
+    })
+
   }
   function fetchPost() {
-    axios.get('http://13.215.51.165:5000/api/post/my-posts', {
+    axios.get('http://13.215.51.165:5000/api/post/get-posts', {
       headers: {
         Authorization: `Bearer ${token}`
       }
     }).then((res) => {
-      const {data} = res.data
-      setUserPost(data.mypost)
+      const { data } = res.data
+      setUserPost(data.posts)
 
       setLoading(false)
     })
@@ -65,7 +71,7 @@ const HomePage: React.FC = () => {
       setImgUrl(res.data.url)
     })
   }
-  
+
   function handleImg() {
     if (!imgUrl) {
       return undefined
@@ -89,13 +95,57 @@ const HomePage: React.FC = () => {
         Authorization: `Bearer ${token}`
       }
     }).then((res) => {
-        
+
     }).catch((err) => {
-      
+
     })
   }
 
-  
+  function handleFollow(user: User, res : string) {
+    // alert(userID)
+    setTrigger(true)
+    if (res) {
+      axios.put('http://13.215.51.165:5000/api/user/unfollow', {
+        unfollowId: user._id
+    }, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    }).then((res) => {
+      console.log(res);
+      toast("Unfollow successfully", {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        });
+    })
+    } else {
+      axios.put('http://13.215.51.165:5000/api/user/follow', {
+        followId: user._id
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }).then((res) => {
+        toast("Follow successfully", {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          });
+      })
+    }
+   
+    setTrigger(false)
+   
+  }
 
   return (
     loading ? <Loader /> : (
@@ -146,10 +196,10 @@ const HomePage: React.FC = () => {
               <IconButton component="label">
                 <input hidden accept="image/*" type="file" onChange={(event) => {
                   uploadImages(event.target.files)
-                }}/>
+                }} />
                 <InsertPhotoIcon />
               </IconButton>
-              <Button endIcon={<SendIcon />}  onClick={handlePost}> 
+              <Button endIcon={<SendIcon />} onClick={handlePost}>
                 Send
               </Button>
             </Stack>
@@ -159,14 +209,14 @@ const HomePage: React.FC = () => {
           }}>
             {
               userPost.map((post) => (
-                <NewFeed setLoading={setLoading} key={post._id} currentUser={user} post={post}/>
+                <NewFeed setLoading={setLoading} key={post._id} currentUser={user} post={post} />
               ))
             }
           </Box>
           <Box mt={2} className='right-side' sx={{
             backgroundColor: '#ffffff',
             borderRadius: '10px',
-            maxHeight: '550px',
+            maxHeight: '1000px',
             width: '320px'
           }}>
             <Stack sx={{
@@ -178,14 +228,14 @@ const HomePage: React.FC = () => {
                     <ViewModuleIcon />
                   </IconButton>
                   <Link to='/collection'><Typography>My Collection</Typography></Link>
-                
+
                 </Stack>
                 <Stack direction="row" sx={{ alignItems: 'center' }}>
                   <IconButton>
                     <StoreIcon />
                   </IconButton>
                   <Link to='/collection'><Typography>On Sale</Typography></Link>
-              
+
                 </Stack>
                 <Stack direction="row" sx={{ alignItems: 'center', cursor: 'pointer' }} onClick={() => setOpenMint(true)}>
                   <IconButton>
@@ -194,26 +244,30 @@ const HomePage: React.FC = () => {
                   <Typography >Mint NFT</Typography>
                 </Stack>
               </Stack>
-              <Stack direction="row" sx={{justifyContent: 'space-between'}} >
+              <Stack direction="row" sx={{ justifyContent: 'space-between' }} >
                 <Typography>Suggestions</Typography>
                 <Typography>View All</Typography>
               </Stack>
               <Stack>
                 {
-                  userFollow.map((user, index) => (
-                    <Stack direction="row" sx={{justifyContent: 'space-between', alignItems: 'center', margin: '1rem 0rem'}} key={index}>
-                      <UserInfo avatar={user.avatar} displayName={user.displayname} tagName={user.tagname}/>
-                      <Typography color='#3B9AE1'>
-                        <Link to="/profile/6306160379c989caec42afc6">follow</Link>
+                   userFollow.map((u, index) => {
+                    let content = 'follow'
+                    let res = u.followers.find((f) => f === user._id)
+                    if (res) {
+                      content = 'unfollow'
+                    }
+                    return (<Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center', margin: '1rem 0rem' }} key={index}>
+                      <Link to={`/profile/${u._id}`}><UserInfo avatar={u.avatar} displayName={u.displayname} tagName={u.tagname} /></Link>
+                      <Typography color={content === 'follow' ? '#3B9AE1' : "red"} onClick={() => handleFollow(u, res)}>
+                        {content}
                       </Typography>
-                    </Stack>
-                  ))
+                    </Stack>)
+                  })
                 }
               </Stack>
             </Stack>
           </Box>
-          <NftMint open={openMint} handleClose={() => setOpenMint(false)}/>
-         
+          <NftMint open={openMint} handleClose={() => setOpenMint(false)} />
         </Stack>
       </Container>
     )
