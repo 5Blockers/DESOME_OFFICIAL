@@ -41,6 +41,7 @@ const NftView: React.FC<Props> = (props) => {
 
 
     function handleReport() {
+        console.log(myNft)
 
     }
 

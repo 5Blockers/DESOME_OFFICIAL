@@ -50,7 +50,7 @@ const OtherPersonal = () => {
         
         if (person.principal != null) {
             const nfts = await collectionCanister.getOwnerNFT(Principal.fromText(person.principal)); 
-            setNftList(nfts)
+            setNftList(nfts as any)
         }
         
         
