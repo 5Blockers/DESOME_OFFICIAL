@@ -6,6 +6,7 @@ import dfinity from "../assets/img/avatar/dfinity.png"
 import NftView from "./NftView"
 import NftEdit from "./NftEdit"
 import { idlFactory } from '../../.dfx/local/canisters/nft';
+// import { idlFactory as  tokenIdlFactory} from '../../.dfx/local/canisters/token'
 import {Actor, HttpAgent} from "@dfinity/agent"
 import {useCanister} from "@connect2ic/react"
 import { Principal } from '@dfinity/principal'
@@ -22,8 +23,9 @@ interface Props {
 
 const NftCard: React.FC<Props> = (props) => {
     const localhost = "http://localhost:3000/"
-    const {user} = useUserContext()
     const agent = new HttpAgent({host: localhost})
+    const {user} = useUserContext()
+   
     const { myNft, type, about } = props
     const [open, setOpen] = useState<boolean>(false)
     const [loading, setLoading] = useState<boolean>(false)
@@ -43,6 +45,7 @@ const NftCard: React.FC<Props> = (props) => {
 
     let NFTActor;
     agent.fetchRootKey()
+    
     async function loadNFT() {
         setLoading(true)
         NFTActor = await Actor.createActor(idlFactory, {
@@ -76,6 +79,7 @@ const NftCard: React.FC<Props> = (props) => {
     }
 
     useEffect(() => {
+        // test()
         loadNFT()
     }, [])
 
@@ -126,7 +130,7 @@ const NftCard: React.FC<Props> = (props) => {
                     </CardContent>
             }
 
-
+            
             <NftView myNft={nftCard} type='personal' open={open} handleClose={() => setOpen(false)} />
             {
                 (about === 'personal') ?

@@ -21,21 +21,26 @@ import UserInfo from '../components/UserInfo';
 import NftMint from "../components/NftMint"
 import { useUserContext } from '../context/UserContext';
 import { toast } from 'react-toastify';
+import { useCanister } from '@connect2ic/react';
+
+// import { idlFactory as  tokenIdlFactory} from '../../.dfx/local/canisters/nft'
 
 
 const HomePage: React.FC = () => {
 
   const { auth, user, token, setUserPost, userPost } = useUserContext()
-  let navigate = useNavigate()
+  
+  const [occ] = useCanister("token")
   const [loading, setLoading] = useState<boolean>(true)
   const [openMint, setOpenMint] = useState<boolean>(false)
   const [imgUrl, setImgUrl] = useState<string>("");
   const [userFollow, setUserFollow] = useState<Array<User>>([])
   const [uploadStatusField, setUploadStatusField] = useState<string>("");
   const [trigger, setTrigger] = useState<boolean>(false)
+
   useEffect(() => {
     // console.log(token);
-
+    // test()
     fetchPost()
     fetchAllUser()
   }, [loading, trigger])
