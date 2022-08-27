@@ -24,8 +24,7 @@ export default function Contacts({contacts, currentUser, changeChat}) {
                 currentUserImage && currentUserName && (
                     <Container>
                         <div className="brand">
-                            <img src='' alt="logo" />
-                            <h3>Desome</h3>
+                            <h3>DeSome</h3>
                         </div>
                         <div className="contacts">
                             {
@@ -80,7 +79,8 @@ const Container = styled.div`
     }
     h3 {
       color: #323232;
-      text-transform: uppercase;
+      font-family: lobster;
+      font-size: 25px;
     }
   }
   .contacts {
