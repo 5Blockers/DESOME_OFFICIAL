@@ -19,6 +19,7 @@ export default function Chat() {
   //checking current user
   useEffect(() => {
     async function checkCurrentUser() {
+      console.log(token)
       if (!token) navigate('/')
       else {
         // const token = await JSON.parse(localStorage.getItem('token'))
@@ -30,7 +31,9 @@ export default function Chat() {
             'Authorization': 'Bearer ' + token
           }
         }).then((res) => res.json())
+        console.log(response)
         setCurrentUser(response.data.user)
+        
       }
     }
     checkCurrentUser()

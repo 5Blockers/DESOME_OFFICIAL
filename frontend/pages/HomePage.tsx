@@ -38,9 +38,9 @@ const HomePage: React.FC = () => {
   }, [loading])
 
   function fetchAllUser() {
-      console.log(token);
+      // console.log(token);
       axios.post("http://13.215.51.165:5000/api/user/all-users").then((res) => {
-        console.log(res.data.data.user);
+        // console.log(res.data.data.user);
       })
   }
   function fetchPost() {

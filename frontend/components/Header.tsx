@@ -109,10 +109,10 @@ const Header = () => {
     const [wallet] = useWallet()
     const open = Boolean(anchorEl)
     const [assest] = useBalance()
-    console.log(wallet)
+    // console.log(wallet)
     function popupAvatar(e: React.MouseEvent<HTMLElement>) {
         setAnchorEl(e.currentTarget)
-        console.log(anchorEl)
+        // console.log(anchorEl)
     }
     function closePopup() {
         setAnchorEl(null)

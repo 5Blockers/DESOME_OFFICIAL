@@ -75,7 +75,7 @@ const Login = () => {
 
   useEffect(() => {
     setLoading(true)
-    console.log(wallet);
+    // console.log(wallet);
     if (wallet?.principal) {
       setPrincipal(wallet.principal)
       setLoading(false)
@@ -89,11 +89,11 @@ const Login = () => {
 
   function handleLogin() {
     axios.post('http://13.215.51.165:5000/api/user/log-in', { principal }).then(res => {
-      console.log(res.data);
+      // console.log(res.data);
       if (res.status === 200) {
         setAuth(true)
         const { data } = res.data;
-        console.log(data.user);
+        // console.log(data.user);
         setToken(data.token)
         setUser(data.user)
         navigate('/')
