@@ -3,12 +3,12 @@ import { styled } from '@mui/material/styles';
 import Switch, { SwitchProps } from '@mui/material/Switch';
 import { Card, FormControlLabel, CardMedia, Box, CardActionArea, CardContent, Typography, Stack, Avatar, Button, Modal, Divider, IconButton, TextField, Select, MenuItem, SelectChangeEvent } from '@mui/material'
 import { useFormik, FormikProps } from 'formik'
-import { NFT } from "../assets/data/nft"
+import { NFT, NFT_DESOME } from "../assets/data/nft"
 import { useCanister } from '@connect2ic/react';
 import { Principal } from '@dfinity/principal';
 import { toast } from 'react-toastify';
 interface Props {
-  myNft: NFT;
+  myNft: NFT_DESOME;
   open: boolean;
   handleClose: () => void;
 }
@@ -82,15 +82,16 @@ interface FormikValue {
   name: string;
   description: string;
   collection: string;
-  onSale: boolean;
-  price: number
+  status: string
+  price: number;
+  newStartPrice: number
 }
 const NftEdit: React.FC<Props> = (props) => {
 
   const { open, handleClose, myNft } = props
   const [collectionCanister] = useCanister("collection")
   const [myCollection, setCollection] = useState<string>('monkey')
-  const [checked, setChecked] = useState<boolean>(myNft?.onSale?.price ? true : false)
+  const [checked, setChecked] = useState<boolean>(myNft?.status === 'listed' ? true : false)
   function handleChangeChecked(event: React.ChangeEvent<HTMLInputElement>) {
     setChecked(event.target.checked)
   }
@@ -102,23 +103,24 @@ const NftEdit: React.FC<Props> = (props) => {
       name: myNft?.name,
       description: myNft?.description,
       collection: myNft?.collection,
-      onSale: myNft?.onSale?.price ? true : false,
-      price: myNft?.onSale?.price
+      status: myNft?.status,
+      price: myNft?.nftPrice,
+      newStartPrice: 0
     },
     onSubmit: (values) => {
-      const {name, collection, description, price} = values
+      const {name, collection, description, price, newStartPrice} = values
     
       
       if (checked == false) {
-        updateNFT(name, collection, description, checked, 0)
+        updateNFT(name, collection, description, false, 0, newStartPrice)
       } else {
-        updateNFT(name, collection, description, checked, price)
+        updateNFT(name, collection, description, true, price, newStartPrice)
       }
       handleClose()
     }
   })
-  async function updateNFT(name, collection, description, onSale : boolean, price : number) {
-    const res = await collectionCanister.updateNFT(Principal.fromText(myNft.principalNFT), name, collection, description, onSale, price);
+  async function updateNFT(name, collection, description, onSale : boolean, price : number, newStartPrice:number) {
+    const res = await collectionCanister.updateNFT(Principal.fromText(myNft.principalNFT), name, collection, description, onSale, price, newStartPrice);
     if (res == "Update NFT successfully") {
       toast.success("Update NFT successfully", {
         position: "top-right",
@@ -129,7 +131,11 @@ const NftEdit: React.FC<Props> = (props) => {
         draggable: true,
         progress: undefined,
         });
+        console.log(price);
+        
     } else {
+      console.log(res);
+      
       toast.error('Error', {
         position: "top-right",
         autoClose: 5000,
@@ -164,15 +170,17 @@ const NftEdit: React.FC<Props> = (props) => {
           <Stack mt={1}>
             <FormControlLabel
               sx={checked ? { color: 'green' } : { color: 'red' }}
-              control={<IOSSwitch name='onSale' onChange={handleChangeChecked} sx={{ m: 1 }} defaultChecked={myNft?.onSale?.price ? true : false} checked={checked} />}
-              label={checked ? 'On Sale' : 'Inactive'}
+              control={<IOSSwitch name='onSale' onChange={handleChangeChecked} sx={{ m: 1 }} defaultChecked={myNft?.status === 'listed' ? true : false} checked={checked} />}
+              label={checked ? 'Listed' : 'Inactive'}
             />
           </Stack>
           {
             checked ?
               <Stack>
                 <Typography>Price</Typography>
-                <TextField name='price' type='number' onChange={formik.handleChange} value={myNft?.onSale?.price} />
+                <TextField name='price' type='number' onChange={formik.handleChange} value={formik.values.price} />
+                <Typography>Start new price</Typography>
+                <TextField name='newStartPrice' type='number' onChange={formik.handleChange} value={formik.values.newStartPrice} />
               </Stack> : null
           }
           <Stack direction="row" justifyContent="space-between" mt={1}>

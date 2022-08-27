@@ -1,11 +1,13 @@
 import React from 'react'
 import { Card, CardMedia, Box, CardActionArea, CardContent, Typography, Stack, Avatar, Button, Modal, Divider, IconButton } from '@mui/material'
-import { NFT } from "../assets/data/nft"
+import { NFT, NFT_DESOME } from "../assets/data/nft"
 import dfinity from "../assets/img/avatar/dfinity.png"
 import SubjectIcon from '@mui/icons-material/Subject';
 import VerifiedIcon from '@mui/icons-material/Verified';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import FlagCircleIcon from '@mui/icons-material/FlagCircle';
 interface Props {
-    myNft: NFT
+    myNft: NFT_DESOME
     type: 'personal' | 'another'
     open: boolean
     handleClose: () => void;
@@ -33,6 +35,26 @@ const styleBox = {
 // sx={{justifyContent: 'space-between'}}
 const NftView: React.FC<Props> = (props) => {
     const { myNft, open, type, handleClose } = props
+
+
+    /// tien
+
+
+    function handleReport() {
+        
+    }
+
+
+
+
+
+
+    ///
+
+
+
+
+
     return (
         <Modal open={open} onClose={handleClose}>
             <Box sx={style}>
@@ -42,20 +64,38 @@ const NftView: React.FC<Props> = (props) => {
                         <Stack spacing={3} sx={{
                             height: '362px'
                         }}>
-                            <Stack direction="row" sx={{alignItems: 'center'}} spacing={1}>
-                                <Typography variant='h3'>{myNft?.collection}</Typography>
-                                <VerifiedIcon sx={{ color: '#0096FF' }}/>
+                            <Stack direction="row" justifyContent="space-between">
+                                <Stack direction="row" sx={{alignItems: 'center'}} spacing={1}>
+                                    <Typography variant='h3'>{myNft?.collection}</Typography>
+                                    <VerifiedIcon sx={{ color: '#0096FF' }}/>
+                                </Stack>
+                                <Stack>
+                                    <IconButton sx={{color: '#ffffff'}} onClick={handleReport}>
+                                        <FlagCircleIcon />
+                                    </IconButton>
+                                </Stack>
                             </Stack>
-                            
                             <Typography variant='h5'>{myNft?.name}</Typography>
-                            <Typography>Owned by <span style={{ color: '#0096FF' }}>{myNft?.owner.tagname}</span> </Typography>
+                            <Typography>Owned by <span style={{ color: '#0096FF' }}>{myNft?.owner}</span> </Typography>
                             <Box sx={styleBox}>
                                 <Stack sx={{padding: '1rem'}}>
                                     <Typography variant='h6'>Current price</Typography>
                                     <Stack direction="row" sx={{ alignItems: 'center' }}>
-                                        <Avatar src={dfinity} />
+                                        
                                         {
-                                            myNft?.onSale ? <Typography>{myNft?.onSale.price} ({Math.floor(myNft?.onSale.price * 6.24)} USD)</Typography>
+                                            myNft?.status === 'listed' ? (
+                                                <Stack spacing={2}>
+                                                   
+                                                    <Typography>{myNft?.nftPrice} OCC coin</Typography>
+                                                    {
+                                                        type === 'another' ? (
+                                                            <IconButton>
+                                                                <ShoppingCartIcon/>
+                                                            </IconButton>
+                                                        ) : null
+                                                    }
+                                                </Stack>
+                                            )
                                                 : <Typography>This NFT is <span style={{ color: 'red' }}>inactive</span>, not for sale</Typography>
                                         }
                                     </Stack>

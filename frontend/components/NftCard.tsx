@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { NFT } from "../assets/data/nft"
+import { NFT, NFT_DESOME } from "../assets/data/nft"
 import { Card, CardMedia, CardActionArea, CardContent, Typography, Stack, Avatar, Button } from '@mui/material'
 // icon 
 import dfinity from "../assets/img/avatar/dfinity.png"
@@ -31,8 +31,8 @@ const NftCard: React.FC<Props> = (props) => {
     const [loading, setLoading] = useState<boolean>(false)
     const [openEdit, setOpenEdit] = useState<boolean>(false)
     const [openTransmit, setOpenTransmit] = useState<boolean>(false)
-    const [nftCard, setNftCard] = useState<NFT>()
-    const [collection] = useCanister("collection")
+    const [nftCard, setNftCard] = useState<NFT_DESOME>()
+    const [collectionCanister] = useCanister("collection")
     const [nft] = useCanister("nft")
 
 
@@ -63,25 +63,42 @@ const NftCard: React.FC<Props> = (props) => {
         const principalOfNft : Principal = await NFTActor.getCanisterID()
         const principalNFT : string = principalOfNft.toText()
         const statusNFT : string = await NFTActor.getStatus() 
-        const status = (statusNFT === 'active') ? 'listed' : 'inactive'
-        let mNFT : NFT = {
+        const status = (statusNFT === 'inactive') ? 'inactive' : 'listed'
+        console.log(ownerString);
+        const price = Number(await collectionCanister.getStartPriceNFT(principalOfNft))
+        const nftIndex = Number(await NFTActor.getIndex())
+        console.log(price);
+        // const 
+        // let mNFT : NFT = {
+        //     principalNFT,
+        //     owner: sang,
+        //     name,
+        //     assest,
+        //     description,
+        //     collection,
+            
+        //     status
+        // }
+        let dNFT : NFT_DESOME = {
             principalNFT,
-            owner: sang,
+            owner: ownerString,
             name,
             assest,
-            description,
             collection,
-            status
+            description,
+            status,
+            nftPrice: price,
+            nftIndex, 
         }
-        setNftCard(mNFT)
-        console.log(mNFT);
+        setNftCard(dNFT)
+        console.log(dNFT);
         setLoading(false)
     }
 
     useEffect(() => {
         // test()
         loadNFT()
-    }, [])
+    }, [openEdit, setOpenEdit])
 
     return loading ? <Loader/> : (
         <Card sx={{ maxWidth: 312, borderRadius: '10px' }}>
@@ -109,7 +126,7 @@ const NftCard: React.FC<Props> = (props) => {
                             <Typography>{nftCard?.name}</Typography>
                             <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center' }}>
                                 <Avatar src={dfinity} />
-                                <Typography>{nftCard?.onSale ? nftCard.onSale.price : '--'}</Typography>
+                                <Typography>{nftCard?.nftPrice ? nftCard.nftPrice : '--'} OCC</Typography>
                             </Stack>
                         </Stack>
                         <Stack direction="row" sx={{
@@ -131,7 +148,7 @@ const NftCard: React.FC<Props> = (props) => {
             }
 
             
-            <NftView myNft={nftCard} type='personal' open={open} handleClose={() => setOpen(false)} />
+            <NftView type={about} myNft={nftCard} open={open} handleClose={() => setOpen(false)} />
             {
                 (about === 'personal') ?
                     <NftEdit myNft={nftCard} open={openEdit} handleClose={() => setOpenEdit(false)} />

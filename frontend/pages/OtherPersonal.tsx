@@ -1,5 +1,5 @@
 import { useUserContext } from '../context/UserContext';
-import { User } from '../assets/data/user';
+import { User, sang } from '../assets/data/user';
 import { Post } from '../assets/data/post';
 import axios from 'axios'
 import React, {useState, useEffect} from 'react'
@@ -10,19 +10,23 @@ import TabContext from '@mui/lab/TabContext';
 import TabList from '@mui/lab/TabList';
 import TabPanel from '@mui/lab/TabPanel';
 import Tab from '@mui/material/Tab';
-import { sangNFTCollected, sangNFTMinted } from '../assets/data/nft'
+import { NFT_DESOME, sangNFTCollected, sangNFTMinted } from '../assets/data/nft'
 import NewFeed from '../components/NewFeed'
 import NftCard from '../components/NftCard';
 import CollectionsIcon from '@mui/icons-material/Collections';
 import { Link } from "react-router-dom";
 import NftMint from "../components/NftMint"
+import { useCanister } from '@connect2ic/react';
+import { Principal } from '@dfinity/principal';
 const OtherPersonal = () => {
     let params = useParams()
     const {token, user} = useUserContext()
     const [nftTab, setNftTab] = useState<string>("collected")
     const [loading, setLoading] = useState<boolean>(true)
-    const [person, setPerson] = useState<User>({} as User)
+    const [person, setPerson] = useState<User>(sang)
     const [posts, setPosts] = useState<Array<Post>>()
+    const [nftList, setNftList] = useState<Array<any>>([])
+    const [collectionCanister] = useCanister("collection")
     const handleChange = (event: React.SyntheticEvent<EventTarget>, newValue: string) => {
         setNftTab(newValue);
     };
@@ -40,10 +44,23 @@ const OtherPersonal = () => {
             console.log(err);
             
         }) 
+    } 
+    async function getOtherNFTs() {
+        console.log(person);
+        
+        if (person.principal != null) {
+            const nfts = await collectionCanister.getOwnerNFT(Principal.fromText(person.principal)); 
+            setNftList(nfts)
+        }
+        
+        
+        
+        
     }
     useEffect(() => {
         getUser()
-    }, [])
+        getOtherNFTs()
+    }, [person])
   return loading ? <Loader/> : (
     <Container maxWidth={false}>
             <Box>
@@ -110,7 +127,7 @@ const OtherPersonal = () => {
                                 </Button>
                             </Stack>
                             <Grid container spacing={2}>
-                                {sangNFTCollected.map((nft, index) => (
+                                {nftList.map((nft, index) => (
                                     <Grid item xs={6} md={4}>
                                         <NftCard myNft={nft} key={index} type='collected' about='another'/>
                                     </Grid>
@@ -125,11 +142,11 @@ const OtherPersonal = () => {
                                 </Button>
                             </Stack>
                             <Grid container spacing={2}>
-                            {sangNFTMinted.map((nft, index) => (
-                               <Grid item xs={6} md={4}>
-                                    <NftCard myNft={nft} key={index} type='onsale' about='another'/>
-                               </Grid>
-                            ))}
+                                {nftList.map((nft, index) => (
+                                <Grid item xs={6} md={4}>
+                                        <NftCard myNft={nft} key={index} type='onsale' about='another'/>
+                                </Grid>
+                                ))}
                             </Grid>
                         </TabPanel>
                     </TabContext>

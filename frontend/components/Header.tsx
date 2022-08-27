@@ -122,6 +122,7 @@ const Header = () => {
     const openWallet = Boolean(anchorElWallet);
     const [principalBalance, setPrincipalBalance] = useState<number>()
     const [openTransfer, setOpenTransfer] = useState<boolean>(false)
+    const [trigger, setTrigger] = useState<boolean>(false)
     const handleClick = (event: React.MouseEvent<HTMLElement>) => {
         setAnchorElWallet(event.currentTarget);
     };
@@ -144,6 +145,7 @@ const Header = () => {
                             draggable: true,
                             progress: undefined,
                         });
+                        setTrigger(true)
                     } else if (res == "Insufficient amount") {
                         toast.error('Insufficient amount', {
                             position: "top-right",
@@ -154,6 +156,7 @@ const Header = () => {
                             draggable: true,
                             progress: undefined,
                         });
+                        setTrigger(true)
                     } else {
                         toast.error('Already claimed', {
                             position: "top-right",
@@ -164,6 +167,7 @@ const Header = () => {
                             draggable: true,
                             progress: undefined,
                         });
+                        setTrigger(true)
                     }
                 })()
                 break;
@@ -210,7 +214,7 @@ const Header = () => {
         console.log(principalBalance);
 
         console.log(user);
-    }, [user, principalBalance, openWallet, handleClose, openTransfer])
+    }, [user, principalBalance, openWallet, handleClose, openTransfer, trigger])
     // 
 
 
