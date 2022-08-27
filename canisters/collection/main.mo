@@ -7,6 +7,8 @@ import NFTActor "../nft/main";
 import Principal "mo:base/Principal";
 import Text "mo:base/Principal";
 import Time "mo:base/Time";
+import Array "mo:base/Array";
+
 actor Collection {
     private type Item = {
         ownerItem: Principal;
@@ -18,6 +20,7 @@ actor Collection {
         price : Nat;
         from : Principal;
     };
+    //danh sach offer cho tung nft
     private var offerPriceMaps = HashMap.HashMap<Principal, List.List<Offer>>(1, Principal.equal, Principal.hash);
     // danh sach cac nft
     private var nftMaps = HashMap.HashMap<Principal, NFTActor.NFT>(1, Principal.equal, Principal.hash);
@@ -25,6 +28,8 @@ actor Collection {
     private var ownerMaps = HashMap.HashMap<Principal, List.List<Principal>>(1, Principal.equal, Principal.hash);
     // list nhung cai nft
     private var itemMaps = HashMap.HashMap<Principal, Item>(1, Principal.equal, Principal.hash); 
+    // List of links
+    private var nftLinks = HashMap.HashMap<Principal, Text>(1, Principal.equal, Principal.hash);
 
     //dau gia
     public func createOffer(newPrice : Nat, newFrom : Principal, nft : Principal) : async Text {
@@ -80,12 +85,12 @@ actor Collection {
         };
     };
 
-    let n : Nat = 2; //3 days
-    let interval : Nat = 6;
+    let n : Nat = 10; //3 days
+    let interval : Nat = 120;
     var count : Nat = 1;
     system func heartbeat() : async () {
         if (count % n == 0) {
-            Debug.print("ping");
+            Debug.print(debug_show(count));
             executeOffer();
         };
         count += 1;
@@ -135,6 +140,7 @@ actor Collection {
         offerPriceMaps.put(nftPrincipal, List.nil<Offer>());
         nftMaps.put(nftPrincipal, newNFT);
         addToOwner(owner, nftPrincipal);
+        nftLinks.put(nftPrincipal, assest);
         return nftPrincipal;
     };
 
@@ -162,17 +168,53 @@ actor Collection {
       return Iter.toArray(itemMaps.vals())
     };
 
+    //for reporting
     public query func getNftLinkList(invalidLink : Text) : async [Text] {
-        var linkList : List.List<Text> = null;
-        for (nft in nftMaps.vals()) {
-            // var link = await nft.getAssest();
-            // if (link != invalidLink) {
-            //     linkList.push(link);
-            // }
-            // Debug.show(nft);
-        };
-        return List.toArray(linkList);
+        var linkList: [Text] = Iter.toArray(nftLinks.vals());
+        return Array.filter(linkList, func(link: Text): Bool{
+            return link!=invalidLink;
+        });
     }; 
+
+    public func executeCompare(link1: Text, link2: Text) : async Text {
+        var principalId1: Principal = Principal.fromText("2vxsx-fae");
+        var principalId2: Principal = Principal.fromText("2vxsx-fae");
+        for ((nftPrincipal, link) in nftLinks.entries()) {
+            if (link == link1) {
+                principalId1 :=  nftPrincipal;
+            }
+            else if (link == link2) {
+                principalId2 := nftPrincipal;
+            };
+        };
+        var nft1 = switch(nftMaps.get(principalId1)) {
+            case null return "return";
+            case (?v) v;
+        };
+        var nft2 = switch(nftMaps.get(principalId2)) {
+            case null return "return";
+            case (?v) v;
+        };
+        var index1 = await nft1.getIndex();
+        var index2 = await nft2.getIndex();
+        var invalidLink: Text = "";
+        var invalidPrincipal: Principal = Principal.fromText("2vxsx-fae");
+        if (index1 < index2) {
+            invalidLink := link2;
+            invalidPrincipal := principalId2;
+        } 
+        else {
+            invalidLink := link1;
+            invalidPrincipal := principalId1;
+        };
+        var oldOwner = await (switch(nftMaps.get(invalidPrincipal)) {
+            case null return "error";
+            case (?v) v;
+        }).getOwner();
+        var message = await transfer(invalidPrincipal, oldOwner, Principal.fromText("abcxyz"));
+        return Principal.toText(oldOwner) # " " # invalidLink;
+    };
+
 
     public shared({caller}) func itemList(id: Principal, price : Nat, startPrice : Nat) : async Text {
         var item : NFTActor.NFT = switch (nftMaps.get(id)) {
@@ -283,51 +325,51 @@ actor Collection {
     //     });
     // }
 
-    public shared({caller}) func transmit(id: Principal, ownerID: Principal, newOwnerID: Principal) : async Text {
-        var nftPurchase : NFTActor.NFT = switch (nftMaps.get(id)) {
-            case null return "NFT does not exist";
-            case (?result) result;
-        };
-        let transferResult = await nftPurchase.transferTo(newOwnerID);
-        Debug.print(Principal.toText(newOwnerID));
-        if (transferResult == "Success") {
-            itemMaps.delete(id);
-            var ownerNFT : List.List<Principal> = switch (ownerMaps.get(ownerID)) {
-                case null List.nil<Principal>();
-                case (?result) result;
-            };
-            ownerNFT := List.filter(ownerNFT, func (itemID : Principal) : Bool {
-                return itemID != id;
-            });
-            addToOwner(newOwnerID, id);
-            return "Success";
-        } else {
-            // Debug.print("Else run")
-            return transferResult;
-        }
-    };
+    // public shared({caller}) func transmit(id: Principal, ownerID: Principal, newOwnerID: Principal) : async Text {
+    //     var nftPurchase : NFTActor.NFT = switch (nftMaps.get(id)) {
+    //         case null return "NFT does not exist";
+    //         case (?result) result;
+    //     };
+    //     let transferResult = await nftPurchase.transferTo(newOwnerID);
+    //     Debug.print(Principal.toText(newOwnerID));
+    //     if (transferResult == "Success") {
+    //         itemMaps.delete(id);
+    //         var ownerNFT : List.List<Principal> = switch (ownerMaps.get(ownerID)) {
+    //             case null List.nil<Principal>();
+    //             case (?result) result;
+    //         };
+    //         ownerNFT := List.filter(ownerNFT, func (itemID : Principal) : Bool {
+    //             return itemID != id;
+    //         });
+    //         addToOwner(newOwnerID, id);
+    //         return "Success";
+    //     } else {
+    //         // Debug.print("Else run")
+    //         return transferResult;
+    //     }
+    // };
 
 
-    public shared({caller}) func new_transfer(to: Principal, tokenId: Principal) : async Text {
-        var nftPurchase : NFTActor.NFT = switch (nftMaps.get(tokenId)) {
-            case null return "NFT does not exist";
-            case (?result) result;
-        };
-        let transferResult = await nftPurchase.transferTo(to);
-        Debug.print(Principal.toText(to));
-        if (transferResult == "Success") {
-            itemMaps.delete(tokenId);
-            var ownerNFT : List.List<Principal> = switch (ownerMaps.get(tokenId)) {
-                case null List.nil<Principal>();
-                case (?result) result;
-            };
-            ownerNFT := List.filter(ownerNFT, func (itemID : Principal) : Bool {
-                return itemID != to;
-            });
-            addToOwner(tokenId, to);
-            return "Success";
-        } else {
-            return transferResult;
-        }
-    };
+    // public shared({caller}) func new_transfer(to: Principal, tokenId: Principal) : async Text {
+    //     var nftPurchase : NFTActor.NFT = switch (nftMaps.get(tokenId)) {
+    //         case null return "NFT does not exist";
+    //         case (?result) result;
+    //     };
+    //     let transferResult = await nftPurchase.transferTo(to);
+    //     Debug.print(Principal.toText(to));
+    //     if (transferResult == "Success") {
+    //         itemMaps.delete(tokenId);
+    //         var ownerNFT : List.List<Principal> = switch (ownerMaps.get(tokenId)) {
+    //             case null List.nil<Principal>();
+    //             case (?result) result;
+    //         };
+    //         ownerNFT := List.filter(ownerNFT, func (itemID : Principal) : Bool {
+    //             return itemID != to;
+    //         });
+    //         addToOwner(tokenId, to);
+    //         return "Success";
+    //     } else {
+    //         return transferResult;
+    //     }
+    // };
 }

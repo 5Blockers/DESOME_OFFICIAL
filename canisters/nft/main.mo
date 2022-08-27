@@ -8,7 +8,7 @@ actor class NFT(name : Text, assest: Text, collection : Text, owner : Principal,
     // Debug.print("NFT class works!");
     private var nftName = name;
     // var vi se chuyen no di cho nguoi khac
-    private let nftAssest = assest;
+    private var nftAssest : Text = assest;
     private var nftCollection = collection;
     private var nftOwner = owner;
     private var nftDescription = description;
