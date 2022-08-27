@@ -106,7 +106,7 @@ const OtherPersonal = () => {
                             <Stack direction="row">
                             <Box sx={{ flexGrow: 1 }} />
                                 <Button>
-                                    <Link to="/collection">View All</Link>
+                                    <Link to={`/collection/${person._id}`}>View All</Link>
                                 </Button>
                             </Stack>
                             <Grid container spacing={2}>
@@ -121,7 +121,7 @@ const OtherPersonal = () => {
                             <Stack direction="row">
                                 <Box sx={{ flexGrow: 1 }} />
                                 <Button>
-                                    <Link to="/collection">View All</Link>
+                                <Link to={`/collection/${person._id}`}>View All</Link>
                                 </Button>
                             </Stack>
                             <Grid container spacing={2}>

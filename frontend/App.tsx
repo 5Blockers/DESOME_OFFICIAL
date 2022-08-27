@@ -39,6 +39,7 @@ import OtherPersonal from "./pages/OtherPersonal"
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Chat from './pages/Chat'
+import OtherCollection from "./pages/OtherCollections"
 
 
 const App : React.FC = () : JSX.Element => {
@@ -62,6 +63,7 @@ const App : React.FC = () : JSX.Element => {
             <Route path="/collection" element={<Collection/>} />
             <Route path="/" element={<HomePage/>}/>
             <Route path="/chat" element={<Chat />} />
+            <Route path="/collection/:id" element={<OtherCollection/>}/>
           </Route>
         
         </Routes>
