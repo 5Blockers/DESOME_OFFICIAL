@@ -26,6 +26,7 @@ actor Collection {
     // list nhung cai nft
     private var itemMaps = HashMap.HashMap<Principal, Item>(1, Principal.equal, Principal.hash); 
 
+    //dau gia
     public func createOffer(newPrice : Nat, newFrom : Principal, nft : Principal) : async Text {
         var ownerNFTs : NFTActor.NFT = switch(nftMaps.get(nft)) {
             case null return "NFT does not exist";
@@ -79,6 +80,53 @@ actor Collection {
         };
     };
 
+    let n : Nat = 2; //3 days
+    let interval : Nat = 6;
+    var count : Nat = 1;
+    system func heartbeat() : async () {
+        if (count % n == 0) {
+            Debug.print("ping");
+            executeOffer();
+        };
+        count += 1;
+    };
+
+    public func executeOffer() {
+        let now = Time.now();
+        for ((nftPrincipal, offers) in offerPriceMaps.entries()) {
+            if (List.size(offers) > 0) {
+                var itemNFTs : Item = switch(itemMaps.get(nftPrincipal)) {
+                    case null return;
+                    case (?result) result;
+                };
+                if (now - itemNFTs.startTime >= interval) {
+                    var ownerNFTs : NFTActor.NFT = switch(nftMaps.get(nftPrincipal)) {
+                        case null return;
+                        case (?result) result;
+                    };
+                    let oldOwner = await ownerNFTs.getOwner();
+                    let offer : Offer = switch(List.last(offers)) {
+                        case null return;
+                        case (?v) v;
+                    };
+                    let newOwner = offer.from;
+                    var text : Text =  await transfer(nftPrincipal, oldOwner, newOwner);
+                    let newOffer = List.nil<Offer>();
+                    offerPriceMaps.put(nftPrincipal, newOffer);
+                    var newItemNFTs : Item = {
+                        price = itemNFTs.price;
+                        ownerItem = newOwner;
+                        startPrice = itemNFTs.startPrice;
+                        startTime = 0;
+                    };
+                    itemMaps.put(nftPrincipal, newItemNFTs);
+                    }
+            };
+        }; 
+    };
+ 
+
+
     public shared({caller}) func mint(name : Text, assest: Text, collection : Text, description : Text) : async Principal {
         let owner : Principal = caller;
         Cycles.add(100_500_000_000);
@@ -114,12 +162,17 @@ actor Collection {
       return Iter.toArray(itemMaps.vals())
     };
 
-    // public query func getNftLinkList(invalidLink : Text) : async [Text] {
-    //     var linkList : List.List<Text> = List.map(Iter.toArray(nftMaps.vals()), func(nft: NFTActor) : Text {
-    //         return await nft.getAssest();
-    //     });
-    //     return List.toArray(linkList);
-    // }; 
+    public query func getNftLinkList(invalidLink : Text) : async [Text] {
+        var linkList : List.List<Text> = null;
+        for (nft in nftMaps.vals()) {
+            // var link = await nft.getAssest();
+            // if (link != invalidLink) {
+            //     linkList.push(link);
+            // }
+            // Debug.show(nft);
+        };
+        return List.toArray(linkList);
+    }; 
 
     public shared({caller}) func itemList(id: Principal, price : Nat, startPrice : Nat) : async Text {
         var item : NFTActor.NFT = switch (nftMaps.get(id)) {
@@ -158,7 +211,7 @@ actor Collection {
     public query func getCollectionCanisterID() : async Principal {
       return Principal.fromActor(Collection);
     };
-public query func getItemByNFT(id : Principal) : async ?Item {
+    public query func getItemByNFT(id : Principal) : async ?Item {
         itemMaps.get(id);
     };
    public shared({caller}) func transfer(id: Principal, ownerID: Principal, newOwnerID: Principal) : async Text {
@@ -184,7 +237,7 @@ public query func getItemByNFT(id : Principal) : async ?Item {
             Debug.print(debug_show("After:", ownerNFT));
            
             addToOwner(newOwnerID, id);
-            ownerMaps.put(ownerID, ownerNFT);
+             ownerMaps.put(ownerID, ownerNFT);
             return "Success";
         } else {
             return transferResult;
