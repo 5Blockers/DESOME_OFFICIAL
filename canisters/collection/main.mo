@@ -61,7 +61,7 @@ actor Collection {
             // if (link != invalidLink) {
             //     linkList.push(link);
             // }
-            Debug.show(nft);
+            // Debug.show(nft);
         };
         return List.toArray(linkList);
     }; 
@@ -101,7 +101,9 @@ actor Collection {
     public query func getCollectionCanisterID() : async Principal {
       return Principal.fromActor(Collection);
     };
-
+public query func getItemByNFT(id : Principal) : async ?Item {
+        itemMaps.get(id);
+    };
    public shared({caller}) func transfer(id: Principal, ownerID: Principal, newOwnerID: Principal) : async Text {
         var nftPurchase : NFTActor.NFT = switch (nftMaps.get(id)) {
             case null return "NFT does not exist";

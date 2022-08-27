@@ -1,40 +1,40 @@
-import { Principal, User } from "./user"
-import { sang, long, tien } from "./user"
-import pic1 from "../img/nft/1.png"
-import pic2 from "../img/nft/2.png"
-import pic3 from "../img/nft/3.png"
-import pic4 from "../img/nft/4.png"
-import pic5 from "../img/nft/5.png"
+import { Principal, User } from "./user";
+// import { sang, long, tien } from "./user";
+import pic1 from "../img/nft/1.png";
+import pic2 from "../img/nft/2.png";
+import pic3 from "../img/nft/3.png";
+import pic4 from "../img/nft/4.png";
+import pic5 from "../img/nft/5.png";
 export interface Comment {
   // postId: Number
   // id: Number
   // author: User
   // content: string
-  text: string
+  text: string;
   postedBy: {
-    _id: string
-    displayname: string
-    avatar: string
-    tagname: string
-  }
-  _id: string
+    _id: string;
+    displayname: string;
+    avatar: string;
+    tagname: string;
+  };
+  _id: string;
 }
 export interface Post {
-  _id: string
-  principal: Principal // author: User
-  resources: Array<string>
+  _id: string;
+  principal: Principal; // author: User
+  resources: Array<string>;
   postedBy: {
-    _id: string
-    displayname: string
-    avatar: string
-    tagname: string
-  }
-  caption: string
-  likes: Array<Principal> | null
-  comments: Array<Comment> | null
-  createdAt: string
-  updatedAt: string
-  privacy: boolean
+    _id: string;
+    displayname: string;
+    avatar: string;
+    tagname: string;
+  };
+  caption: string;
+  likes: Array<Principal> | null;
+  comments: Array<Comment> | null;
+  createdAt: string;
+  updatedAt: string;
+  privacy: boolean;
 }
 
 // export const postList: Array<Post> = [
