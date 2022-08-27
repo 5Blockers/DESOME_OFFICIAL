@@ -54,6 +54,18 @@ actor Collection {
       return Iter.toArray(itemMaps.vals())
     };
 
+    public query func getNftLinkList(invalidLink : Text) : async [Text] {
+        var linkList : List.List<Text> = null;
+        for (nft in nftMaps.vals()) {
+            // var link = await nft.getAssest();
+            // if (link != invalidLink) {
+            //     linkList.push(link);
+            // }
+            Debug.show(nft);
+        };
+        return List.toArray(linkList);
+    }; 
+
     public shared({caller}) func itemList(id: Principal) : async Text {
         var item : NFTActor.NFT = switch (nftMaps.get(id)) {
             case null return "NFT does not exist";
