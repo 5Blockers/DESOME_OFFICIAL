@@ -12,6 +12,7 @@ import Share from "../assets/icons/Share.svg"
 // component
 import UserInfo from "./UserInfo"
 import { useUserContext } from '../context/UserContext';
+import { toast } from 'react-toastify'
 
 interface Props {
     post: Post
@@ -39,7 +40,15 @@ const NewFeed: React.FC<Props> = (props) => {
                 Authorization: `Bearer ${token}`
             }
         }).then((res) => {
-            alert("Comment thanh cong")
+            toast.success('comment successfully', {
+                position: "top-right",
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+            })
             setLoading(false)
         }).catch((err) => {
 
@@ -96,7 +105,6 @@ const NewFeed: React.FC<Props> = (props) => {
                                 <Box sx={{ marginLeft: '1.5rem' }} key={cmt._id}>
                                     <UserInfo avatar={cmt.postedBy.avatar} displayName={cmt.postedBy.displayname} tagName={cmt.postedBy.tagname} />
                                     <Typography paragraph variant='caption'>{cmt.text}</Typography>
-
                                 </Box>
                             ))}
                         </Collapse>

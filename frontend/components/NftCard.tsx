@@ -40,6 +40,7 @@ const NftCard: React.FC<Props> = (props) => {
     //     })
     // }
 
+
     let NFTActor;
     agent.fetchRootKey()
     async function loadNFT() {
@@ -58,6 +59,8 @@ const NftCard: React.FC<Props> = (props) => {
         const ownerString = owner.toText()
         const principalOfNft : Principal = await NFTActor.getCanisterID()
         const principalNFT : string = principalOfNft.toText()
+        const statusNFT : string = await NFTActor.getStatus() 
+        const status = (statusNFT === 'active') ? 'listed' : 'inactive'
         let mNFT : NFT = {
             principalNFT,
             owner: sang,
@@ -65,7 +68,7 @@ const NftCard: React.FC<Props> = (props) => {
             assest,
             description,
             collection,
-            status: 'inactive',
+            status
         }
         setNftCard(mNFT)
         console.log(mNFT);

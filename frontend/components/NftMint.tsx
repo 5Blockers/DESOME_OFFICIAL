@@ -59,6 +59,7 @@ const NftMint: React.FC<Props> = (props) => {
             const { name, description, collection, collectionSelect } = values
             const finalCollection = collection ? collection : collectionSelect
             mintNft(name, description, finalCollection, img);
+            handleClose()
         }
     })
 
