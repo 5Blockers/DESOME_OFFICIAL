@@ -41,7 +41,7 @@ const NftView: React.FC<Props> = (props) => {
 
 
     function handleReport() {
-        
+
     }
 
 
@@ -52,7 +52,15 @@ const NftView: React.FC<Props> = (props) => {
     ///
 
 
+    //// sang
 
+
+    function handleBuy() {
+        
+    }
+
+
+    ///
 
 
     return (
@@ -89,7 +97,7 @@ const NftView: React.FC<Props> = (props) => {
                                                     <Typography>{myNft?.nftPrice} OCC coin</Typography>
                                                     {
                                                         type === 'another' ? (
-                                                            <IconButton>
+                                                            <IconButton onClick={handleBuy}>
                                                                 <ShoppingCartIcon/>
                                                             </IconButton>
                                                         ) : null
