@@ -154,7 +154,7 @@ const Header = () => {
                     </IconButton>
                     <IconButton>
                         <Badge badgeContent={4} color="error">
-                            <MarkunreadIcon sx={iconStyle} />
+                            <Link to='/chat'><MarkunreadIcon  sx={iconStyle} /></Link>
                         </Badge>
                     </IconButton>
                     <IconButton>

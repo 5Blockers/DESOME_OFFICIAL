@@ -38,6 +38,7 @@ import { UserContextProvider, useUserContext } from "./context/UserContext"
 import OtherPersonal from "./pages/OtherPersonal"
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Chat from './pages/Chat'
 
 
 const App : React.FC = () : JSX.Element => {
@@ -60,6 +61,7 @@ const App : React.FC = () : JSX.Element => {
             {/* <Route /> */}
             <Route path="/collection" element={<Collection/>} />
             <Route path="/" element={<HomePage/>}/>
+            <Route path="/chat" element={<Chat />} />
           </Route>
         
         </Routes>
