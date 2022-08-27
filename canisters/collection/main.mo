@@ -114,17 +114,12 @@ actor Collection {
       return Iter.toArray(itemMaps.vals())
     };
 
-    public query func getNftLinkList(invalidLink : Text) : async [Text] {
-        var linkList : List.List<Text> = null;
-        for (nft in nftMaps.vals()) {
-            // var link = await nft.getAssest();
-            // if (link != invalidLink) {
-            //     linkList.push(link);
-            // }
-            // Debug.show(nft);
-        };
-        return List.toArray(linkList);
-    }; 
+    // public query func getNftLinkList(invalidLink : Text) : async [Text] {
+    //     var linkList : List.List<Text> = List.map(Iter.toArray(nftMaps.vals()), func(nft: NFTActor) : Text {
+    //         return await nft.getAssest();
+    //     });
+    //     return List.toArray(linkList);
+    // }; 
 
     public shared({caller}) func itemList(id: Principal, price : Nat, startPrice : Nat) : async Text {
         var item : NFTActor.NFT = switch (nftMaps.get(id)) {
@@ -189,7 +184,7 @@ public query func getItemByNFT(id : Principal) : async ?Item {
             Debug.print(debug_show("After:", ownerNFT));
            
             addToOwner(newOwnerID, id);
-             ownerMaps.put(ownerID, ownerNFT);
+            ownerMaps.put(ownerID, ownerNFT);
             return "Success";
         } else {
             return transferResult;
