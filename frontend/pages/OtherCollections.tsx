@@ -16,6 +16,7 @@ const OtherCollection = () => {
     const [myNfts, setNfts] = useState<any>([]);
     const [loading, setLoading] = useState<boolean>(false)
     const [otherUser, setOtherUser] = useState<User>({} as User)
+    
     useEffect(() => {
         axios.get(`http://13.215.51.165:5000/api/user/${params.id}`, {
             headers: {

@@ -5,6 +5,7 @@ import Text "mo:base/Text";
 // class vi dung de tao smart contract
 actor class NFT(name : Text, assest: Text, collection : Text, owner : Principal, description : Text, index : Nat) = this {
     Debug.print("NFT works");
+    
     // Debug.print("NFT class works!");
     private var nftName = name;
     // var vi se chuyen no di cho nguoi khac

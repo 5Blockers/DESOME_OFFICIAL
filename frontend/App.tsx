@@ -15,6 +15,7 @@ import "@connect2ic/core/style.css"
 import * as counter from "../.dfx/local/canisters/counter"
 import * as collection from "../.dfx/local/canisters/collection"
 import * as nft from "../.dfx/local/canisters/nft"
+import * as tokenCanister from "../.dfx/local/canisters/token"
 /*
  * Some examples to get you started
  */
@@ -95,6 +96,7 @@ const client = createClient({
     counter,
     collection,
     nft,
+    tokenCanister
   },
   providers: defaultProviders,
   globalProviderConfig: {

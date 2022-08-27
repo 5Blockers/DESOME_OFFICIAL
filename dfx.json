@@ -20,7 +20,8 @@
       "dependencies": [
         "counter",
         "collection",
-        "nft"
+        "nft",
+        "token"
       ],
       "frontend": {
         "entrypoint": "dist/index.html"
