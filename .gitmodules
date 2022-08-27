@@ -1,3 +1,6 @@
 [submodule "DeSome_offchain"]
 	path = DeSome_offchain
 	url = https://github.com/5Blockers/DeSome_offchain.git
+[submodule "DESOME_Offchain_Python"]
+	path = DESOME_Offchain_Python
+	url = https://github.com/5Blockers/DESOME_Offchain_Python.git
