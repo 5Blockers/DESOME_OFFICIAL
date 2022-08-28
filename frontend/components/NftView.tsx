@@ -1,4 +1,4 @@
-import React from 'react'
+import React, {useState, useEffect} from 'react'
 import { Card, CardMedia, Box, CardActionArea, CardContent, Typography, Stack, Avatar, Button, Modal, Divider, IconButton } from '@mui/material'
 import { NFT, NFT_DESOME } from "../assets/data/nft"
 import dfinity from "../assets/img/avatar/dfinity.png"
@@ -6,6 +6,14 @@ import SubjectIcon from '@mui/icons-material/Subject';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import FlagCircleIcon from '@mui/icons-material/FlagCircle';
+import NftBuy from './NftBuy'
+import { Principal } from "@dfinity/principal"
+import { Actor, HttpAgent } from "@dfinity/agent"
+import { idlFactory as tokenIdlFactory } from '../../.dfx/local/canisters/token'
+import {host_fe} from '../utils/APIUrl'
+import { useCanister } from '@connect2ic/react';
+import { useUserContext } from '../context/UserContext';
+import { toast } from 'react-toastify';
 interface Props {
     myNft: NFT_DESOME
     type: 'personal' | 'another'
@@ -34,9 +42,10 @@ const styleBox = {
 }
 // sx={{justifyContent: 'space-between'}}
 const NftView: React.FC<Props> = (props) => {
+    const {user} = useUserContext()
     const { myNft, open, type, handleClose } = props
-
-
+    const [openBuy, setOpenBuy] = useState<boolean>(false);
+    const [collectionCanister] = useCanister("collection")
     /// tien
 
 
@@ -54,17 +63,44 @@ const NftView: React.FC<Props> = (props) => {
 
     //// sang
 
-
-    function handleBuy() {
+    async function handleBuy() {
         
+        const agent = new HttpAgent({
+          host: host_fe
+        });
+        const tokenActor = await Actor.createActor(tokenIdlFactory, {
+            agent,
+            canisterId: Principal.fromText("wflfh-4yaaa-aaaaa-aaata-cai")
+          })
+        const result = await tokenActor.transfer(Principal.fromText(myNft.owner), myNft.nftPrice);
+        if (result == "Success") {
+            const transferResult = await collectionCanister.transfer(Principal.fromText(myNft.principalNFT), Principal.fromText(myNft.owner), Principal.fromText(user.principal));
+            // const transferResult = await opend.completePurchase(id, sellerID, CURRENT_USER_ID)
+            console.log(transferResult);
+            if (transferResult == "Success") {
+                toast.success('Purchase successfully', {
+                    position: "top-right",
+                    autoClose: 5000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined,
+                    });
+            }
+          }
+        
+        setOpenBuy(false)
     }
 
 
     ///
 
+  
 
     return (
-        <Modal open={open} onClose={handleClose}>
+       <>
+         <Modal open={open} onClose={handleClose}>
             <Box sx={style}>
                 <Stack>
                     <Stack direction="row" spacing={3}>
@@ -97,7 +133,7 @@ const NftView: React.FC<Props> = (props) => {
                                                     <Typography>{myNft?.nftPrice} OCC coin</Typography>
                                                     {
                                                         type === 'another' ? (
-                                                            <IconButton onClick={handleBuy}>
+                                                            <IconButton onClick={() => setOpenBuy(true)}>
                                                                 <ShoppingCartIcon/>
                                                             </IconButton>
                                                         ) : null
@@ -112,7 +148,7 @@ const NftView: React.FC<Props> = (props) => {
                         </Stack>
                     </Stack>
                 </Stack>
-                <Stack direction="row" mt={3    }>
+                <Stack direction="row" mt={3}>
                     <Box sx={styleBox}>
                         <Stack direction="row" sx={{ alignItems: 'center' }}>
                             <IconButton>
@@ -127,6 +163,8 @@ const NftView: React.FC<Props> = (props) => {
                 </Stack>
             </Box>
         </Modal>
+        <NftBuy open={openBuy} price={myNft?.nftPrice} onClose={() => setOpenBuy(false)} handleBuy={handleBuy}/>
+       </>
     )
 }
 
