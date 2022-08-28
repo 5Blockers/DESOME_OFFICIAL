@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react'
-import { Card, CardMedia, Box, CardActionArea, CardContent, Typography, Stack, Avatar, Button, Modal, Divider, IconButton } from '@mui/material'
+import { Card, CardMedia, Box, CardActionArea, CardContent, Typography, Stack, Avatar, Button, Modal, Divider, IconButton, TextField } from '@mui/material'
 import { NFT, NFT_DESOME } from "../assets/data/nft"
 import dfinity from "../assets/img/avatar/dfinity.png"
 import SubjectIcon from '@mui/icons-material/Subject';
@@ -15,11 +15,20 @@ import { useCanister } from '@connect2ic/react';
 import { useUserContext } from '../context/UserContext';
 import { toast } from 'react-toastify';
 import {useNavigate} from 'react-router-dom'
+import {useFormik, FormikProps} from 'formik'
+import axios from 'axios';
 interface Props {
     myNft: NFT_DESOME
     type: 'personal' | 'another'
     open: boolean
     handleClose: () => void;
+}
+interface FormikValues {
+    offerPrice: number
+}
+interface Offer {
+    price: number;
+    principal: Principal
 }
 const style = {
     position: 'absolute' as 'absolute',
@@ -45,15 +54,56 @@ const styleBox = {
 const NftView: React.FC<Props> = (props) => {
     let nav = useNavigate()
     const {user} = useUserContext()
+    const formik : FormikProps<FormikValues> = useFormik<FormikValues>({
+        initialValues: {
+            offerPrice: 0
+        }, 
+        onSubmit: (values) => {
+            const {offerPrice} = values
+            makeOffer(offerPrice)
+            
+        }
+
+    })
     const { myNft, open, type, handleClose } = props
     const [openBuy, setOpenBuy] = useState<boolean>(false);
     const [collectionCanister] = useCanister("collection")
-    /// tien
+    const [bestOffer, setBestOffer] = useState<Array<Offer>>([])
+    const [inputRender, setInputRender] = useState<boolean>(false);
+    const [startPrice, setStartPrice] = useState<number>(0)
 
-
-    function handleReport() {
-
+   
+    
+    // newPrice : Nat, newFrom : Principal, nft : Principal
+    async function makeOffer(offerPrice) {
+        const res = await collectionCanister.createOffer(120, Principal.fromText(user.principal), Principal.fromText(myNft.principalNFT));
+        console.log(res as string);
+        toast(res as string, {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            });
     }
+
+    /// tien
+    // axios.post('', {
+    //     py_data
+    // }).then(res => {})
+
+    // async function handleReport() {
+    //     let response = await fetch('http://13.215.51.165:8000/image-check', {
+    //                 method: 'POST',
+    //                 body: JSON.stringify([{link:"http://res.cloudinary.com/sangtran127/image/upload/v1661649567/desome/gi87kby2i3x7o8vselwt.png"},[{l:"http://res.cloudinary.com/sangtran127/image/upload/v1661650939/desome/pzovz6chpxxubum7wexp.png"},{l:"http://res.cloudinary.com/sangtran127/image/upload/v1661649592/desome/dycrzmppsfjqs8neswlt.jpg"}]])
+                    
+    //             }).then(res => res.json())
+    //             console.log(response)
+    //    }
+
+    
 
 
 
@@ -92,7 +142,6 @@ const NftView: React.FC<Props> = (props) => {
                     });
             }
           }
-        
         setOpenBuy(false)
         nav('/')
     }
@@ -100,6 +149,18 @@ const NftView: React.FC<Props> = (props) => {
 
     ///
 
+    
+    async function fetchOffer() {
+        const nftStartPrice : any = await collectionCanister.getStartPriceNFT(Principal.fromText(myNft.principalNFT))
+        const res = await collectionCanister.getAllOffers(Principal.fromText(myNft.principalNFT));
+        console.log(res);
+        setStartPrice(nftStartPrice as number);
+        
+        setBestOffer(res as any)
+    }
+    useEffect(() => {
+        fetchOffer();
+    }, [myNft])
   
 
     return (
@@ -129,20 +190,30 @@ const NftView: React.FC<Props> = (props) => {
                                 <Stack sx={{padding: '1rem'}}>
                                     <Typography variant='h6'>Current price</Typography>
                                     <Stack direction="row" sx={{ alignItems: 'center' }}>
-                                        
                                         {
                                             myNft?.status === 'listed' ? (
                                                 <Stack spacing={2}>
                                                    
-                                                    <Typography>{myNft?.nftPrice} OCC coin</Typography>
+                                                    <Typography>
+                                                        <span style={{color: 'red'}}>{myNft?.nftPrice}</span> OCC coin</Typography>
                                                     {
                                                         type === 'another' ? (
                                                             <Box>
-                                                                <Stack>
-                                                                <IconButton onClick={() => setOpenBuy(true)}>
-                                                                    <ShoppingCartIcon/>
-                                                                </IconButton>
+                                                                <Stack direction="row" justifyContent='space-between' spacing={3}>
+                                                                    <IconButton onClick={() => setOpenBuy(true)}>
+                                                                        <ShoppingCartIcon/>
+                                                                    </IconButton>
+                                                                    <Button variant='contained' onClick={() => setInputRender(!inputRender)}>
+                                                                        Make an offer
+                                                                    </Button>
+                                                                    <Typography variant='h6'>Best offer: {bestOffer.length > 0 ? bestOffer[bestOffer.length-1]?.price : 'not yet'}</Typography>
                                                                 </Stack>
+                                                                {inputRender ? <Stack mt={2}>
+                                                                    <form onSubmit={formik.handleSubmit}>
+                                                                        <TextField name='offerPrice' onChange={formik.handleChange} value={formik.values.offerPrice} placeholder={`Start price offer: ${startPrice}`}/>
+                                                                        <Button type='submit'>Submit</Button>
+                                                                    </form>
+                                                                </Stack> : null}
                                                             </Box>
                                                         ) : null
                                                     }
@@ -169,6 +240,21 @@ const NftView: React.FC<Props> = (props) => {
                     </Box>           
                     <Box></Box>     
                 </Stack>
+                {(myNft?.status === 'listed' &&  type === 'another' ) && 
+                    <Stack mt={3}>
+                        <Typography>Offer list</Typography>
+                        <Box sx={styleBox}>
+                            {
+                                bestOffer.map((offer) => (
+                                    <Stack mt={1} direction='row'>
+                                        <Typography>{offer.price}</Typography>
+                                        <Typography>{offer.principal.toText()}</Typography>
+                                    </Stack>
+                                ))
+                            }
+                        </Box>
+                    </Stack>
+                }
             </Box>
         </Modal>
         <NftBuy open={openBuy} price={myNft?.nftPrice} onClose={() => setOpenBuy(false)} handleBuy={handleBuy}/>

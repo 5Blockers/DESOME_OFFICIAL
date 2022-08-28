@@ -15,7 +15,7 @@ actor Collection {
         startTime : Int;
     };
     public type Offer = {
-        price : Nat;
+        price : Int;
         from : Principal;
     };
     private var offerPriceMaps = HashMap.HashMap<Principal, List.List<Offer>>(1, Principal.equal, Principal.hash);
@@ -35,7 +35,14 @@ actor Collection {
         return item.startPrice;
     };
     //dau gia
-    public func createOffer(newPrice : Nat, newFrom : Principal, nft : Principal) : async Text {
+    public query func getAllOffers(nftPrincipal: Principal) : async [Offer] {
+        var offers = switch(offerPriceMaps.get(nftPrincipal)) {
+            case null return [];
+            case (?v) v;
+        };
+        return List.toArray(offers);
+    };
+    public func createOffer(newPrice : Int, newFrom : Principal, nft : Principal) : async Text {
         var ownerNFTs : NFTActor.NFT = switch(nftMaps.get(nft)) {
             case null return "NFT does not exist";
             case (?result) result;
@@ -88,12 +95,12 @@ actor Collection {
         };
     };
 
-    let n : Nat = 2; //3 days
-    let interval : Nat = 6;
+    let n : Nat = 10; //3 days
+    let interval : Nat = 300;
     var count : Nat = 1;
     system func heartbeat() : async () {
         if (count % n == 0) {
-            Debug.print("ping");
+            Debug.print(debug_show(count));
             executeOffer();
         };
         count += 1;
@@ -107,7 +114,7 @@ actor Collection {
                     case null return;
                     case (?result) result;
                 };
-                if (now - itemNFTs.startTime >= interval) {
+                if ((now - itemNFTs.startTime) / 1000000000 >= interval) {
                     var ownerNFTs : NFTActor.NFT = switch(nftMaps.get(nftPrincipal)) {
                         case null return;
                         case (?result) result;
