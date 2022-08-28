@@ -95,17 +95,19 @@ const NftMint: React.FC<Props> = (props) => {
                         <Stack>
                             <Typography>Image, Video <span style={{ color: 'red' }}>*</span><span style={{ color: '#BDBDD7' }}>required fields</span></Typography>
                             <Stack direction='row'>
-                                <Button style={{
+                                {/* <Button style={{
                                     borderRadius: '10px',
                                     padding: '5rem',
                                     backgroundColor: '#D9D9D9',
                                     color: '#111111'
-                                }} component='label'>
-                                    <input hidden accept="image/*" type="file" onChange={(event) => {
+                                }} component='label'> */}
+                                    <Stack mt={2}>
+                                    <input accept="image/*" type="file" onChange={(event) => {
                                         uploadImages(event.target.files)
                                     }} />
-                                    <CropOriginalIcon fontSize='large' />
-                                </Button>
+                                    </Stack>
+                                    {/* <CropOriginalIcon fontSize='large' /> */}
+                                {/* </Button> */}
                             </Stack>
 
 
