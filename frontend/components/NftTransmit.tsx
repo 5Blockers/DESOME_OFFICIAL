@@ -30,6 +30,7 @@ const style = {
     p: 4,
 };
 const NftTransmit: React.FC<Props> = (props) => {
+    let nav = useNavigate()
     const {open, handleClose, principalNFT, assestNFT, ownerNFT} = props
     const [collection] = useCanister("collection")
     const formik : FormikProps<FormikType> = useFormik<FormikType>({
@@ -56,6 +57,7 @@ const NftTransmit: React.FC<Props> = (props) => {
                 draggable: true,
                 progress: undefined,
                 });
+                nav('/')
         } else {
             toast.error(result as string, {
                 position: "top-right",

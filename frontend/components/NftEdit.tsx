@@ -7,6 +7,7 @@ import { NFT, NFT_DESOME } from "../assets/data/nft"
 import { useCanister } from '@connect2ic/react';
 import { Principal } from '@dfinity/principal';
 import { toast } from 'react-toastify';
+import {useNavigate} from 'react-router-dom'
 interface Props {
   myNft: NFT_DESOME;
   open: boolean;
@@ -87,7 +88,7 @@ interface FormikValue {
   newStartPrice: number
 }
 const NftEdit: React.FC<Props> = (props) => {
-
+  let nav = useNavigate()
   const { open, handleClose, myNft } = props
   const [collectionCanister] = useCanister("collection")
   const [myCollection, setCollection] = useState<string>('monkey')
@@ -116,6 +117,7 @@ const NftEdit: React.FC<Props> = (props) => {
       } else {
         updateNFT(name, collection, description, true, price, newStartPrice)
       }
+      nav('/')
       handleClose()
     }
   })
@@ -131,10 +133,9 @@ const NftEdit: React.FC<Props> = (props) => {
         draggable: true,
         progress: undefined,
         });
-        console.log(price);
+        
         
     } else {
-      console.log(res);
       
       toast.error('Error', {
         position: "top-right",

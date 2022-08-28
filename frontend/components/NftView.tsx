@@ -14,6 +14,7 @@ import {host_fe} from '../utils/APIUrl'
 import { useCanister } from '@connect2ic/react';
 import { useUserContext } from '../context/UserContext';
 import { toast } from 'react-toastify';
+import {useNavigate} from 'react-router-dom'
 interface Props {
     myNft: NFT_DESOME
     type: 'personal' | 'another'
@@ -42,6 +43,7 @@ const styleBox = {
 }
 // sx={{justifyContent: 'space-between'}}
 const NftView: React.FC<Props> = (props) => {
+    let nav = useNavigate()
     const {user} = useUserContext()
     const { myNft, open, type, handleClose } = props
     const [openBuy, setOpenBuy] = useState<boolean>(false);
@@ -64,15 +66,16 @@ const NftView: React.FC<Props> = (props) => {
     //// sang
 
     async function handleBuy() {
-        
+      
         const agent = new HttpAgent({
           host: host_fe
         });
+        agent.fetchRootKey()
         const tokenActor = await Actor.createActor(tokenIdlFactory, {
             agent,
-            canisterId: Principal.fromText("wflfh-4yaaa-aaaaa-aaata-cai")
+            canisterId: Principal.fromText("rno2w-sqaaa-aaaaa-aaacq-cai")
           })
-        const result = await tokenActor.transfer(Principal.fromText(myNft.owner), myNft.nftPrice);
+        const result = await tokenActor.transferWithPrincipal(Principal.fromText(user.principal), Principal.fromText(myNft.owner), myNft.nftPrice);
         if (result == "Success") {
             const transferResult = await collectionCanister.transfer(Principal.fromText(myNft.principalNFT), Principal.fromText(myNft.owner), Principal.fromText(user.principal));
             // const transferResult = await opend.completePurchase(id, sellerID, CURRENT_USER_ID)
@@ -91,6 +94,7 @@ const NftView: React.FC<Props> = (props) => {
           }
         
         setOpenBuy(false)
+        nav('/')
     }
 
 
@@ -133,9 +137,13 @@ const NftView: React.FC<Props> = (props) => {
                                                     <Typography>{myNft?.nftPrice} OCC coin</Typography>
                                                     {
                                                         type === 'another' ? (
-                                                            <IconButton onClick={() => setOpenBuy(true)}>
-                                                                <ShoppingCartIcon/>
-                                                            </IconButton>
+                                                            <Box>
+                                                                <Stack>
+                                                                <IconButton onClick={() => setOpenBuy(true)}>
+                                                                    <ShoppingCartIcon/>
+                                                                </IconButton>
+                                                                </Stack>
+                                                            </Box>
                                                         ) : null
                                                     }
                                                 </Stack>
