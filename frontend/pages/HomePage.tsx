@@ -29,7 +29,7 @@ import { useCanister } from '@connect2ic/react';
 const HomePage: React.FC = () => {
 
   const { auth, user, token, setUserPost, userPost } = useUserContext()
-  
+  let nav = useNavigate()
   const [occ] = useCanister("token")
   const [loading, setLoading] = useState<boolean>(true)
   const [openMint, setOpenMint] = useState<boolean>(false)
@@ -44,7 +44,9 @@ const HomePage: React.FC = () => {
     fetchPost()
     fetchAllUser()
   }, [loading, trigger])
+  // useEffect(() => {
 
+  // }, [handleFollow, trigger])
   function fetchAllUser() {
     console.log(token);
     axios.post("http://13.215.51.165:5000/api/user/all-users").then((res) => {
@@ -148,7 +150,7 @@ const HomePage: React.FC = () => {
       })
     }
    
-    setTrigger(false)
+    nav('/profile')
    
   }
 

@@ -9,6 +9,7 @@ actor Token {
     var totalSupply: Nat = 500000000;
     var coinName: Text = "OCC";  
     private stable var balancesEntries : [(Principal, Nat)] = [];
+    
     private var balances = HashMap.HashMap<Principal, Nat>(1, Principal.equal, Principal.hash);
 
 
