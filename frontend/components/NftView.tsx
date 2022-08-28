@@ -6,6 +6,12 @@ import SubjectIcon from '@mui/icons-material/Subject';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import FlagCircleIcon from '@mui/icons-material/FlagCircle';
+import {host_py, host} from '../utils/APIUrl';
+import { useCanister } from '@connect2ic/react';
+import { useUserContext } from '../context/UserContext'
+import axios from 'axios';
+import { Co2Sharp } from '@mui/icons-material';
+
 interface Props {
     myNft: NFT_DESOME
     type: 'personal' | 'another'
@@ -38,10 +44,49 @@ const NftView: React.FC<Props> = (props) => {
 
 
     /// tien
+    const [collectionCanister] = useCanister('collection');
 
-
-    function handleReport() {
-        console.log(myNft)
+    async function handleReport() {
+        let reportLink = myNft.assest
+        let linkList:any = await collectionCanister.getNftLinkList(reportLink);
+        console.log(reportLink)
+        console.log(linkList)
+        let py_data = [{reportLink}, linkList.map((l) => {return{l}})]
+        console.log(py_data)
+        let invalidLink = await axios.post(host_py, {
+            py_data
+        })
+        // let invalidLink = await fetch(`${host_py}`, {
+        //     method: 'POST',
+        //     body: JSON.stringify({
+        //         py_data
+        //     })
+        // }).then(res => res.json())
+        console.log(invalidLink)
+        if (!invalidLink) return "Nothing to compare"
+        else {
+            let message:any = await collectionCanister.executeCompare(reportLink, invalidLink)
+            console.log(message)
+            if (message) return "error at compare two link"
+            else {
+                const {token} = useUserContext()
+                let data = message.split(' ')
+                console.log(data)
+                let response = await fetch(`${host}/report`, {
+                    method: 'PUT',
+                    headers: {
+                        "Content-Type": "application/json",
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify({
+                        invalidLink: data[1],
+                        invalidUserId: data[0],
+                        reportCode: 'a6687d1a-d9e4-43e4-8612-f1f5e7f272f6'
+                    })
+                }).then(res => res.json())
+                console.log(response)
+            }
+        }
 
     }
 

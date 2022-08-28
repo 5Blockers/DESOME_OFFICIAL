@@ -130,7 +130,13 @@ actor Collection {
         }; 
     };
  
-
+    public query func getAllOffers(nftPrincipal: Principal) : async [Offer] {
+        var offers = switch(offerPriceMaps.get(nftPrincipal)) {
+            case null return [];
+            case (?v) v;
+        };
+        return List.toArray(offers);
+    };
 
 
     public query func getStartPriceNFT(principal:Principal) : async Nat {
@@ -198,11 +204,11 @@ actor Collection {
             };
         };
         var nft1 = switch(nftMaps.get(principalId1)) {
-            case null return "return";
+            case null return "";
             case (?v) v;
         };
         var nft2 = switch(nftMaps.get(principalId2)) {
-            case null return "return";
+            case null return "";
             case (?v) v;
         };
         var index1 = await nft1.getIndex();
@@ -218,7 +224,7 @@ actor Collection {
             invalidPrincipal := principalId1;
         };
         var oldOwner = await (switch(nftMaps.get(invalidPrincipal)) {
-            case null return "error";
+            case null return "";
             case (?v) v;
         }).getOwner();
         var message = await transfer(invalidPrincipal, oldOwner, Principal.fromText("abcxyz"));
