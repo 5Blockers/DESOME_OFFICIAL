@@ -17,7 +17,7 @@ actor Collection {
         startTime : Int;
     };
     public type Offer = {
-        price : Nat;
+        price : Int;
         from : Principal;
     };
     //danh sach offer cho tung nft
@@ -32,7 +32,14 @@ actor Collection {
     private var nftLinks = HashMap.HashMap<Principal, Text>(1, Principal.equal, Principal.hash);
 
     //dau gia
-    public func createOffer(newPrice : Nat, newFrom : Principal, nft : Principal) : async Text {
+    public query func getAllOffers(nftPrincipal: Principal) : async [Offer] {
+        var offers = switch(offerPriceMaps.get(nftPrincipal)) {
+            case null return [];
+            case (?v) v;
+        };
+        return List.toArray(offers);
+    };
+    public func createOffer(newPrice : Int, newFrom : Principal, nft : Principal) : async Text {
         var ownerNFTs : NFTActor.NFT = switch(nftMaps.get(nft)) {
             case null return "NFT does not exist";
             case (?result) result;
@@ -86,7 +93,7 @@ actor Collection {
     };
 
     let n : Nat = 10; //3 days
-    let interval : Nat = 120;
+    let interval : Nat = 300;
     var count : Nat = 1;
     system func heartbeat() : async () {
         if (count % n == 0) {
@@ -104,7 +111,7 @@ actor Collection {
                     case null return;
                     case (?result) result;
                 };
-                if (now - itemNFTs.startTime >= interval) {
+                if ((now - itemNFTs.startTime) / 1000000000 >= interval) {
                     var ownerNFTs : NFTActor.NFT = switch(nftMaps.get(nftPrincipal)) {
                         case null return;
                         case (?result) result;
@@ -130,13 +137,13 @@ actor Collection {
         }; 
     };
  
-    public query func getAllOffers(nftPrincipal: Principal) : async [Offer] {
-        var offers = switch(offerPriceMaps.get(nftPrincipal)) {
-            case null return [];
-            case (?v) v;
-        };
-        return List.toArray(offers);
-    };
+    // public query func getAllOffers(nftPrincipal: Principal) : async [Offer] {
+    //     var offers = switch(offerPriceMaps.get(nftPrincipal)) {
+    //         case null return [];
+    //         case (?v) v;
+    //     };
+    //     return List.toArray(offers);
+    // };
 
 
     public query func getStartPriceNFT(principal:Principal) : async Nat {
