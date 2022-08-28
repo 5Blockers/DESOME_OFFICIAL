@@ -46,19 +46,18 @@ const OtherPersonal = () => {
         }) 
     } 
     async function getOtherNFTs() {
-        console.log(person);
+      
         
         if (person.principal != null) {
             const nfts = await collectionCanister.getOwnerNFT(Principal.fromText(person.principal)); 
             setNftList(nfts as any)
         }
-        
-        
-        
-        
     }
     useEffect(() => {
         getUser()
+       
+    }, [])
+    useEffect(() => {
         getOtherNFTs()
     }, [person])
   return loading ? <Loader/> : (

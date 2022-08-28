@@ -179,7 +179,7 @@ const HomePage: React.FC = () => {
                   setUploadStatusField(event.target.value)
                 }}
                 id="upload-status"
-                label="What's on your mind?"
+                label="What's in your mind?"
                 // multiline
                 rows={5}
                 variant='filled'

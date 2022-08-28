@@ -5,6 +5,7 @@ import { Principal } from '@dfinity/principal'
 import { toast } from 'react-toastify';
 import * as yup from 'yup'
 import { useCanister } from '@connect2ic/react';
+import {useNavigate} from 'react-router-dom'
 interface Props {
     open: boolean;
     handleClose: () => void;
