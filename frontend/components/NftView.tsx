@@ -53,15 +53,19 @@ const NftView: React.FC<Props> = (props) => {
         console.log(linkList)
         let py_data = [{reportLink}, linkList.map((l) => {return{l}})]
         console.log(py_data)
-        let invalidLink = await axios.post(host_py, {
-            py_data
-        })
-        // let invalidLink = await fetch(`${host_py}`, {
-        //     method: 'POST',
-        //     body: JSON.stringify({
-        //         py_data
-        //     })
-        // }).then(res => res.json())
+        // let invalidLink = await axios.post(host_py, {
+        //     py_data
+        // })
+        let invalidLink = await fetch(`${host_py}`, {
+            mode: 'cors',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            method: 'post',
+            body: JSON.stringify({
+                py_data
+            })
+        }).then(res => res.json())
         console.log(invalidLink)
         if (!invalidLink) return "Nothing to compare"
         else {
