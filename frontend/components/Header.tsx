@@ -214,7 +214,7 @@ const Header = () => {
         console.log(principalBalance);
 
         console.log(user);
-    }, [user])
+    }, [user, principalBalance, handleClose, openTransfer, trigger])
     // 
 
 
